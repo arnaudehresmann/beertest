@@ -1,26 +1,104 @@
 import React, { Component } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import Mapbox from '@mapbox/react-native-mapbox-gl';
+import config from './utils/config';
+import breweries from './map/features.json'
 
-Mapbox.setAccessToken('pk.eyJ1IjoiYXJuYXVkZWhyZXNtYW5uIiwiYSI6ImNqbHhidDh5czFhaHEza2xkNWVnNXVocW8ifQ.3Kv1XQGE00DshiG5bBcexg');
+Mapbox.setAccessToken(config.get('accessToken'));
 
-export default class App extends Component<{}> {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Mapbox.MapView
-            styleURL={Mapbox.StyleURL.Street}
-            zoomLevel={15}
-            centerCoordinate={[11.256, 43.770]}
-            style={styles.container}>
-        </Mapbox.MapView>
-      </View>
-    );
+const VECTOR_SOURCE_URL =
+  'mapbox://arnaudehresmann.cjmag27gf2ywn32s5vwzc8uvj-7ic0r';
+
+  const layerStyles = Mapbox.StyleSheet.create({
+    symbol:{
+        textField:'title'
+    },
+    singlePoint: {
+      circleColor: 'green',
+      circleOpacity: 0.84,
+      circleStrokeWidth: 2,
+      circleStrokeColor: 'white',
+      circleRadius: 5,
+      circlePitchAlignment: 'map',
+    },
+  
+    clusteredPoints: {
+      circlePitchAlignment: 'map',
+      circleColor: Mapbox.StyleSheet.source(
+        [
+          [25, 'yellow'],
+          [50, 'red'],
+          [75, 'blue'],
+          [100, 'orange'],
+          [300, 'pink'],
+          [750, 'white'],
+        ],
+        'point_count',
+        Mapbox.InterpolationMode.Exponential,
+      ),
+  
+      circleRadius: Mapbox.StyleSheet.source(
+        [[0, 15], [100, 20], [750, 30]],
+        'point_count',
+        Mapbox.InterpolationMode.Exponential,
+      ),
+  
+      circleOpacity: 0.84,
+      circleStrokeWidth: 2,
+      circleStrokeColor: 'white',
+    },
+  
+    clusterCount: {
+      textField: '{point_count}',
+      textSize: 12,
+      textPitchAlignment: 'map',
+    },
+  });
+
+
+  export default class App extends Component<{}> {
+
+    render() {
+      return (
+        <View style={styles.container}>
+          <Mapbox.MapView
+              styleURL={'mapbox://styles/arnaudehresmann/cjmolasbs01e42sljq5fz78sy'}
+              zoomLevel={4.81}
+              centerCoordinate={[3.315401, 47.077385]}
+              style={styles.container}>
+         <Mapbox.ShapeSource
+            id="earthquakes"
+            cluster
+            clusterRadius={15}
+            clusterMaxZoom={14}
+            shape={breweries}>
+            <Mapbox.SymbolLayer
+              id="pointCount"
+              style={layerStyles.clusterCount}
+            />
+
+            <Mapbox.CircleLayer
+              id="clusteredPoints"
+              belowLayerID="pointCount"
+              filter={['has', 'point_count']}
+              style={layerStyles.clusteredPoints}
+            />
+
+            <Mapbox.CircleLayer
+              id="singlePoint"
+              filter={['!has', 'point_count']}
+              style={layerStyles.singlePoint}
+            />
+          </Mapbox.ShapeSource>      
+          </Mapbox.MapView>
+        </View>
+      );
+    }
   }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+  
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+  });
+  

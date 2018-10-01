@@ -3,6 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import Mapbox from '@mapbox/react-native-mapbox-gl';
 import config from './utils/config';
 import breweries from './map/features.json'
+import Bubble from './components/bubble'
 
 Mapbox.setAccessToken(config.get('accessToken'));
 
@@ -63,7 +64,57 @@ const VECTOR_SOURCE_URL =
   });
 
 
+
   export default class App extends Component {
+
+    constructor(props) {
+      super(props);
+  
+      this.state = {
+        latitude: undefined,
+        longitude: undefined,
+        title: undefined,
+        adr1: undefined,
+        adr2: undefined,
+      };
+  
+      this.onPress = this.onPress.bind(this);
+    }
+  
+    get hasValidLastClick() {
+      return (
+        typeof this.state.latitude === 'number' &&
+        typeof this.state.longitude === 'number'
+      );
+    }
+
+    onPress(event) {
+        const feature = event.nativeEvent.payload;
+        console.log('You pressed a layer here is your feature', feature); // eslint-disable-line
+      const { geometry, properties } = feature;
+  
+      this.setState({
+        latitude: geometry.coordinates[1],
+        longitude: geometry.coordinates[0],
+        title: properties.title,
+        adr1: properties.bra_adresse_4 ,
+        adr2: properties.bra_adresse_6,
+      });
+    }
+
+    renderLastClicked() {
+      if (!this.hasValidLastClick) {
+        return;
+      }
+  
+      return (
+        <Bubble>
+          <Text>{this.state.title}</Text>
+          <Text>{this.state.adr1}</Text>
+          <Text>{this.state.adr2}</Text>
+        </Bubble>
+      );
+    }
 
     render() {
       return (
@@ -72,13 +123,17 @@ const VECTOR_SOURCE_URL =
               styleURL={'mapbox://styles/arnaudehresmann/cjmolasbs01e42sljq5fz78sy'}
               zoomLevel={4.81}
               centerCoordinate={[3.315401, 47.077385]}
-              style={styles.container}>
+              style={styles.container}
+              
+              >
          <Mapbox.ShapeSource
             id="earthquakes"
             cluster
             clusterRadius={15}
             clusterMaxZoom={14}
-            shape={breweries}>
+            shape={breweries}
+            onPress={this.onPress}
+            >
             <Mapbox.SymbolLayer
               id="pointCount"
               style={layerStyles.clusterCount}
@@ -100,6 +155,7 @@ const VECTOR_SOURCE_URL =
             />
           </Mapbox.ShapeSource>      
           </Mapbox.MapView>
+          {this.renderLastClicked()}
         </View>
       );
     }

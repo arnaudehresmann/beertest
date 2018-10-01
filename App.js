@@ -14,12 +14,19 @@ const VECTOR_SOURCE_URL =
         textField:'title'
     },
     singlePoint: {
-      circleColor: 'green',
-      circleOpacity: 0.84,
-      circleStrokeWidth: 2,
-      circleStrokeColor: 'white',
-      circleRadius: 5,
-      circlePitchAlignment: 'map',
+      // circleColor: 'green',
+      // circleOpacity: 0.84,
+      // circleStrokeWidth: 2,
+      // circleStrokeColor: 'white',
+      // circleRadius: 5,
+      // circlePitchAlignment: 'map',
+      textField: '{title}',
+      textSize: 12,
+      textPitchAlignment: 'map',
+      iconImage: 'beer-15',
+      textAnchor: 'bottom',
+      textOffset: [0, -0.5],
+      textOptional: true
     },
   
     clusteredPoints: {
@@ -56,7 +63,7 @@ const VECTOR_SOURCE_URL =
   });
 
 
-  export default class App extends Component<{}> {
+  export default class App extends Component {
 
     render() {
       return (
@@ -75,6 +82,7 @@ const VECTOR_SOURCE_URL =
             <Mapbox.SymbolLayer
               id="pointCount"
               style={layerStyles.clusterCount}
+              belowLayerID="clusteredPoints"
             />
 
             <Mapbox.CircleLayer
@@ -84,10 +92,11 @@ const VECTOR_SOURCE_URL =
               style={layerStyles.clusteredPoints}
             />
 
-            <Mapbox.CircleLayer
+            <Mapbox.SymbolLayer
               id="singlePoint"
               filter={['!has', 'point_count']}
               style={layerStyles.singlePoint}
+              belowLayerID="pointCount"
             />
           </Mapbox.ShapeSource>      
           </Mapbox.MapView>
